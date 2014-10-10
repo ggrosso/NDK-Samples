@@ -25,7 +25,6 @@ static screen_context_t screen_ctx;
 static screen_window_t screen_win;
 dialog_instance_t alert_dialog = 0;
 
-
 /**
  * Use the PID to set the window group id.
  */
@@ -47,8 +46,7 @@ get_window_group_id()
  *
  * @return @c EXIT_SUCCESS or @c EXIT_FAILURE
  */
-int
-setup_screen()
+int setup_screen()
 {
     if (screen_create_context(&screen_ctx, SCREEN_APPLICATION_CONTEXT) != 0) {
         return EXIT_FAILURE;
@@ -59,29 +57,36 @@ setup_screen()
         return EXIT_FAILURE;
     }
 
-    if (screen_create_window_group(screen_win, get_window_group_id()) != 0) goto fail;
+    if (screen_create_window_group(screen_win, get_window_group_id()) != 0)
+        goto fail;
 
     int usage = SCREEN_USAGE_NATIVE;
-    if (screen_set_window_property_iv(screen_win, SCREEN_PROPERTY_USAGE, &usage) != 0) goto fail;
+    if (screen_set_window_property_iv(screen_win, SCREEN_PROPERTY_USAGE, &usage) != 0)
+        goto fail;
 
-    if (screen_create_window_buffers(screen_win, 1) != 0) goto fail;
+    if (screen_create_window_buffers(screen_win, 1) != 0)
+        goto fail;
 
     screen_buffer_t buff;
-    if (screen_get_window_property_pv(screen_win, SCREEN_PROPERTY_RENDER_BUFFERS, (void*)&buff) != 0) goto fail;
+    if (screen_get_window_property_pv(screen_win, SCREEN_PROPERTY_RENDER_BUFFERS, (void*) &buff)
+            != 0)
+        goto fail;
 
     int buffer_size[2];
-    if (screen_get_buffer_property_iv(buff, SCREEN_PROPERTY_BUFFER_SIZE, buffer_size) != 0) goto fail;
+    if (screen_get_buffer_property_iv(buff, SCREEN_PROPERTY_BUFFER_SIZE, buffer_size) != 0)
+        goto fail;
 
-    int attribs[1] = {SCREEN_BLIT_END};
-    if (screen_fill(screen_ctx, buff, attribs) != 0) goto fail;
+    int attribs[1] = { SCREEN_BLIT_END };
+    if (screen_fill(screen_ctx, buff, attribs) != 0)
+        goto fail;
 
-    int dirty_rects[4] = {0, 0, buffer_size[0], buffer_size[1]};
-    if (screen_post_window(screen_win, buff, 1, (const int*)dirty_rects, 0) != 0) goto fail;
+    int dirty_rects[4] = { 0, 0, buffer_size[0], buffer_size[1] };
+    if (screen_post_window(screen_win, buff, 1, (const int*) dirty_rects, 0) != 0)
+        goto fail;
 
     return EXIT_SUCCESS;
 
-fail:
-    screen_destroy_window(screen_win);
+    fail: screen_destroy_window(screen_win);
     screen_destroy_context(screen_ctx);
     return EXIT_FAILURE;
 }
@@ -89,8 +94,7 @@ fail:
 /**
  * Show an alert dialog that has two buttons: a "Cancel" button, and a "OK" button.
  */
-static void
-show_alert()
+static void show_alert()
 {
     if (alert_dialog) {
         return;
@@ -116,7 +120,8 @@ show_alert()
     /*
      * Use a button label defined in bps/dialog.h. Attach a context to the button.
      */
-    if (dialog_add_button(alert_dialog, DIALOG_CANCEL_LABEL, true, cancel_button_context, true) != BPS_SUCCESS) {
+    if (dialog_add_button(alert_dialog, DIALOG_CANCEL_LABEL, true, cancel_button_context,
+            true) != BPS_SUCCESS) {
         fprintf(stderr, "Failed to add button to alert dialog.");
         dialog_destroy(alert_dialog);
         alert_dialog = 0;
@@ -134,7 +139,8 @@ show_alert()
     }
 
     if (dialog_show(alert_dialog) != BPS_SUCCESS) {
-        fprintf(stderr, "Failed to show alert dialog.");
+        fprintf(stderr, "Failed"
+                " to show alert dialog.");
         dialog_destroy(alert_dialog);
         alert_dialog = 0;
         return;
@@ -144,8 +150,7 @@ show_alert()
 /**
  * Handle a dialog response.
  */
-static void
-handle_dialog_response(bps_event_t *event)
+static void handle_dialog_response(bps_event_t *event)
 {
     /*
      * Double check that the event is valid
@@ -159,21 +164,19 @@ handle_dialog_response(bps_event_t *event)
     const char* context = dialog_event_get_selected_context(event);
 
     char output[1024];
-    snprintf(output, 1024, "Selected Index: %d, Label: %s, Context: %s\n",
-            selectedIndex, label?label:"n/a", context?(char*)context:"n/a");
+    snprintf(output, 1024, "Selected Index: %d, Label: %s, Context: %s\n", selectedIndex,
+            label ? label : "n/a", context ? (char*) context : "n/a");
     fprintf(stderr, output);
 
     dialog_destroy(alert_dialog);
     alert_dialog = 0;
 }
 
-
 /**
  * A sample application that demonstrates the BlackBerry(R) 10 Native SDK APIs
  * for displaying dialog windows.
  */
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int exit_application = 0;
 
